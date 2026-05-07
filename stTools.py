@@ -48,6 +48,31 @@ def create_date_input(
                                                      key=key)
 
 
+STOCK_CATEGORIES = {
+    "💻 Technology": {
+        "AAPL": "Apple", "MSFT": "Microsoft", "GOOG": "Alphabet",
+        "NVDA": "NVIDIA", "META": "Meta", "AMZN": "Amazon",
+        "ADBE": "Adobe", "INTC": "Intel", "CSCO": "Cisco",
+        "ORCL": "Oracle", "IBM": "IBM", "CRM": "Salesforce",
+        "AMD": "AMD", "QCOM": "Qualcomm", "TSLA": "Tesla",
+        "INFY": "Infosys", "TCS.NS": "TCS", "WIPRO.NS": "Wipro",
+        "HCLTECH.NS": "HCL Tech", "TECHM.NS": "Tech Mahindra",
+    },
+    "🏦 Finance & Payments": {
+        "JPM": "JPMorgan Chase", "BAC": "Bank of America", "GS": "Goldman Sachs",
+        "V": "Visa", "MA": "Mastercard", "PYPL": "PayPal",
+        "MS": "Morgan Stanley", "WFC": "Wells Fargo", "C": "Citigroup",
+        "HDFC.NS": "HDFC Bank", "ICICIBANK.NS": "ICICI Bank", "AXISBANK.NS": "Axis Bank",
+    },
+    "🛒 Consumer & Healthcare": {
+        "NFLX": "Netflix", "DIS": "Disney", "PEP": "PepsiCo",
+        "KO": "Coca-Cola", "WMT": "Walmart", "COST": "Costco",
+        "JNJ": "Johnson & Johnson", "PFE": "Pfizer", "MRK": "Merck",
+        "SPOT": "Spotify", "BABA": "Alibaba", "XOM": "ExxonMobil",
+    },
+}
+
+
 def get_stock_demo_data(no_stocks: int) -> list:
     stock_name_list = [
         'AAPL', 'TSLA', 'GOOG', 'MSFT', 'AMZN', 'META', 'NVDA', 'PYPL',
@@ -69,6 +94,18 @@ def click_button_port() -> None:
     st.session_state["load_portfolio"] = True
     st.session_state["load_portfolio_check"] = True
     st.session_state["run_simulation_check"] = False
+
+
+def click_button_geo() -> None:
+    st.session_state["load_geo"] = True
+    st.session_state["load_geo_check"] = True
+
+
+def click_button_single_stock() -> None:
+    st.session_state["analyse_single_stock"] = True
+    st.session_state["load_portfolio_check"] = False
+    st.session_state["run_simulation_check"] = False
+    st.session_state["load_geo_check"] = False
 
 
 def preview_stock(
@@ -130,12 +167,425 @@ def create_side_bar_width() -> None:
 
 def remove_white_space():
     st.markdown("""
-            <style>
-                   .block-container {
-                        padding-top: 1rem;
-                    }
-            </style>
-            """, unsafe_allow_html=True)
+        <style>
+            @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600;700&display=swap');
+
+            /* ══════════════════════════════════════════════
+               DESIGN TOKENS  (light palette)
+               ══════════════════════════════════════════════ */
+            :root {
+                --bg:       #f8fafc;
+                --bg2:      #f1f5f9;
+                --card:     #ffffff;
+                --border:   #e2e8f0;
+                --border2:  #cbd5e1;
+                --text:     #0f172a;
+                --text2:    #475569;
+                --text3:    #94a3b8;
+                --accent:   #0891b2;   /* cyan-600  */
+                --accent2:  #7c3aed;   /* violet-600 */
+                --green:    #059669;   /* emerald-600 */
+                --red:      #dc2626;   /* red-600 */
+                --amber:    #d97706;   /* amber-600 */
+                --font-mono: 'Space Mono', 'Courier New', monospace;
+                --font-body: 'DM Sans', 'Segoe UI', sans-serif;
+                --shadow:   0 1px 4px rgba(15,23,42,.06), 0 4px 16px rgba(15,23,42,.04);
+                --shadow-hover: 0 2px 8px rgba(15,23,42,.10), 0 8px 24px rgba(15,23,42,.06);
+            }
+
+            /* ── Base ── */
+            .block-container { padding-top: 1rem !important; max-width: 1400px; }
+            html, body, [class*="css"], .stApp {
+                font-family: var(--font-body) !important;
+                background-color: var(--bg) !important;
+                color: var(--text) !important;
+            }
+
+            /* ── Hide / neutralise Streamlit chrome ── */
+            #MainMenu, footer, [data-testid="stToolbar"],
+            [data-testid="stDecoration"], [data-testid="stStatusWidget"] {
+                display: none !important;
+            }
+            header[data-testid="stHeader"] {
+                background: #f8fafc !important;
+                border-bottom: 1px solid #e2e8f0 !important;
+                height: 0 !important;
+                min-height: 0 !important;
+            }
+            /* Force entire app background white/light */
+            .stApp, .main, [data-testid="stAppViewContainer"] {
+                background-color: #f8fafc !important;
+            }
+            [data-testid="stMain"] > div {
+                background-color: #f8fafc !important;
+            }
+
+            /* ── Main headings ── */
+            h1 { font-family: var(--font-mono) !important; letter-spacing: -0.5px; color: var(--text) !important; }
+            h2, h3 { font-family: var(--font-body) !important; font-weight: 700 !important; color: var(--text) !important; }
+
+            /* ══════════════════════════════════════════════
+               SIDEBAR
+               ══════════════════════════════════════════════ */
+            [data-testid="stSidebar"] {
+                background: var(--card) !important;
+                border-right: 1px solid var(--border) !important;
+            }
+            [data-testid="stSidebar"] * { color: var(--text) !important; }
+            [data-testid="stSidebar"] .stMarkdown p {
+                font-size: 13px;
+                color: var(--text2) !important;
+            }
+            /* sidebar title */
+            [data-testid="stSidebar"] h1 {
+                font-family: var(--font-mono) !important;
+                font-size: 15px !important;
+                letter-spacing: 2px;
+                color: var(--accent) !important;
+                text-transform: uppercase;
+                padding-bottom: 8px;
+                border-bottom: 2px solid var(--accent);
+                margin-bottom: 4px !important;
+            }
+            [data-testid="stSidebar"][aria-expanded="true"] {
+                min-width: 420px;
+                max-width: 520px;
+            }
+
+            /* ══════════════════════════════════════════════
+               TAB STRIP
+               ══════════════════════════════════════════════ */
+            .stTabs [data-baseweb="tab-list"] {
+                background: var(--bg2);
+                border-radius: 10px;
+                gap: 2px;
+                padding: 4px;
+                border: 1px solid var(--border);
+            }
+            .stTabs [data-baseweb="tab"] {
+                border-radius: 7px;
+                color: var(--text2) !important;
+                font-family: var(--font-body);
+                font-weight: 500;
+                font-size: 13px;
+                padding: 6px 14px;
+                transition: all .15s;
+            }
+            .stTabs [aria-selected="true"] {
+                background: var(--card) !important;
+                color: var(--accent) !important;
+                box-shadow: var(--shadow) !important;
+                font-weight: 600 !important;
+            }
+
+            /* ══════════════════════════════════════════════
+               METRIC CARDS
+               ══════════════════════════════════════════════ */
+            [data-testid="stMetric"] {
+                background: var(--card) !important;
+                border: 1px solid var(--border) !important;
+                border-radius: 14px !important;
+                padding: 16px 20px !important;
+                box-shadow: var(--shadow);
+                transition: box-shadow .2s, border-color .2s, transform .15s;
+            }
+            [data-testid="stMetric"]:hover {
+                box-shadow: var(--shadow-hover);
+                border-color: var(--accent) !important;
+                transform: translateY(-2px);
+            }
+            [data-testid="stMetricLabel"] {
+                font-family: var(--font-mono) !important;
+                font-size: 10px !important;
+                letter-spacing: 1.5px !important;
+                text-transform: uppercase !important;
+                color: var(--text3) !important;
+            }
+            [data-testid="stMetricValue"] {
+                font-family: var(--font-mono) !important;
+                font-size: 26px !important;
+                font-weight: 700 !important;
+                color: var(--text) !important;
+                line-height: 1.2 !important;
+            }
+            [data-testid="stMetricDelta"] {
+                font-family: var(--font-mono) !important;
+                font-size: 12px !important;
+                font-weight: 700 !important;
+            }
+
+            /* ══════════════════════════════════════════════
+               BUTTONS
+               ══════════════════════════════════════════════ */
+            .stButton > button {
+                background: linear-gradient(135deg, var(--accent), var(--accent2)) !important;
+                color: #fff !important;
+                border: none !important;
+                border-radius: 8px !important;
+                padding: 9px 22px !important;
+                font-family: var(--font-mono) !important;
+                font-size: 12px !important;
+                font-weight: 700 !important;
+                letter-spacing: 1px;
+                text-transform: uppercase;
+                width: 100%;
+                transition: opacity .2s, transform .15s, box-shadow .2s !important;
+                box-shadow: 0 2px 8px rgba(8,145,178,.25);
+            }
+            .stButton > button:hover {
+                opacity: .88 !important;
+                transform: translateY(-2px) !important;
+                box-shadow: 0 4px 16px rgba(8,145,178,.35) !important;
+            }
+            .stButton > button:active { transform: translateY(0) !important; }
+
+            /* ══════════════════════════════════════════════
+               INPUTS & SELECTS
+               ══════════════════════════════════════════════ */
+            [data-baseweb="input"] > div,
+            [data-baseweb="textarea"] > div {
+                background: var(--bg2) !important;
+                border-color: var(--border) !important;
+                border-radius: 8px !important;
+            }
+            [data-baseweb="input"] > div:focus-within,
+            [data-baseweb="textarea"] > div:focus-within {
+                border-color: var(--accent) !important;
+                box-shadow: 0 0 0 3px rgba(8,145,178,.12) !important;
+            }
+            [data-baseweb="select"] > div {
+                background: var(--bg2) !important;
+                border-color: var(--border) !important;
+                border-radius: 8px !important;
+            }
+            [data-baseweb="select"] > div:focus-within {
+                border-color: var(--accent) !important;
+            }
+            /* multiselect tags */
+            [data-baseweb="tag"] {
+                background: rgba(8,145,178,.10) !important;
+                border-radius: 5px !important;
+                color: var(--accent) !important;
+                font-family: var(--font-mono) !important;
+                font-size: 11px !important;
+                font-weight: 700 !important;
+            }
+            /* radio buttons */
+            [data-testid="stRadio"] label {
+                font-size: 13px !important;
+                font-weight: 500 !important;
+                color: var(--text2) !important;
+                padding: 4px 8px;
+                border-radius: 6px;
+                transition: background .15s;
+            }
+            [data-testid="stRadio"] label:hover { background: var(--bg2); }
+
+            /* ══════════════════════════════════════════════
+               EXPANDERS
+               ══════════════════════════════════════════════ */
+            [data-testid="stExpander"] {
+                background: var(--card) !important;
+                border: 1px solid var(--border) !important;
+                border-radius: 10px !important;
+                box-shadow: var(--shadow);
+                margin-bottom: 6px !important;
+            }
+            [data-testid="stExpander"] summary {
+                font-family: var(--font-mono) !important;
+                font-size: 12px !important;
+                font-weight: 700 !important;
+                letter-spacing: .5px;
+                color: var(--text) !important;
+                padding: 10px 14px !important;
+            }
+            [data-testid="stExpander"] summary:hover { color: var(--accent) !important; }
+
+            /* ══════════════════════════════════════════════
+               DATAFRAME / TABLE
+               ══════════════════════════════════════════════ */
+            [data-testid="stDataFrame"] {
+                border: 1px solid var(--border) !important;
+                border-radius: 10px !important;
+                overflow: hidden;
+                box-shadow: var(--shadow);
+            }
+            [data-testid="stDataFrame"] thead tr th {
+                background: var(--bg2) !important;
+                color: var(--text3) !important;
+                font-family: var(--font-mono) !important;
+                font-size: 10px !important;
+                font-weight: 700 !important;
+                letter-spacing: 1.5px !important;
+                text-transform: uppercase !important;
+                border-bottom: 1px solid var(--border) !important;
+            }
+            [data-testid="stDataFrame"] tbody tr:hover td {
+                background: rgba(8,145,178,.04) !important;
+            }
+
+            /* ══════════════════════════════════════════════
+               PLOTLY CHARTS — force light bg
+               ══════════════════════════════════════════════ */
+            .stPlotlyChart { border-radius: 12px; overflow: hidden; }
+            .js-plotly-plot .plotly { border-radius: 12px; }
+
+            /* ══════════════════════════════════════════════
+               SPINNER / ALERTS
+               ══════════════════════════════════════════════ */
+            .stSpinner > div { border-top-color: var(--accent) !important; }
+            [data-testid="stAlert"] {
+                border-radius: 10px !important;
+                border-left-width: 4px !important;
+            }
+
+            /* ══════════════════════════════════════════════
+               DIVIDER
+               ══════════════════════════════════════════════ */
+            hr { border-color: var(--border) !important; margin: 1.5rem 0 !important; }
+
+            /* ══════════════════════════════════════════════
+               DROPDOWN POPOVER (force light bg)
+               ══════════════════════════════════════════════ */
+            [data-baseweb="popover"] ul,
+            [data-baseweb="menu"],
+            [role="listbox"] {
+                background: #ffffff !important;
+                border: 1px solid #e2e8f0 !important;
+                border-radius: 10px !important;
+                box-shadow: 0 4px 20px rgba(15,23,42,.12) !important;
+            }
+            [role="option"], [data-baseweb="menu-item"] {
+                color: #0f172a !important;
+                font-size: 13px !important;
+            }
+            [role="option"]:hover, [data-baseweb="menu-item"]:hover,
+            [aria-selected="true"] {
+                background: #f1f5f9 !important;
+                color: #0891b2 !important;
+            }
+
+            /* ══════════════════════════════════════════════
+               RADIO  (horizontal pill style)
+               ══════════════════════════════════════════════ */
+            [data-testid="stRadio"] > div {
+                gap: 6px !important;
+                flex-wrap: wrap;
+            }
+            [data-testid="stRadio"] label {
+                background: var(--bg2);
+                border: 1px solid var(--border);
+                border-radius: 8px;
+                padding: 6px 14px;
+                font-size: 13px !important;
+                font-weight: 500 !important;
+                color: var(--text2) !important;
+                transition: all .15s;
+                cursor: pointer;
+            }
+            [data-testid="stRadio"] label:has(input:checked) {
+                background: var(--card);
+                border-color: var(--accent);
+                color: var(--accent) !important;
+                font-weight: 600 !important;
+                box-shadow: var(--shadow);
+            }
+
+            /* ══════════════════════════════════════════════
+               INFO / ALERT BOXES
+               ══════════════════════════════════════════════ */
+            [data-testid="stAlert"] {
+                border-radius: 10px !important;
+                border-left-width: 4px !important;
+            }
+            [data-testid="stAlert"][data-baseweb="notification"] {
+                background: #f0f9ff !important;
+                border-color: #0891b2 !important;
+            }
+
+            /* ══════════════════════════════════════════════
+               SCROLLBAR
+               ══════════════════════════════════════════════ */
+            ::-webkit-scrollbar { width: 5px; height: 5px; }
+            ::-webkit-scrollbar-track { background: var(--bg2); }
+            ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+            ::-webkit-scrollbar-thumb:hover { background: var(--text3); }
+
+            /* ══════════════════════════════════════════════
+               SECTION TITLE helper class  (use via st.markdown)
+               ══════════════════════════════════════════════ */
+            .rf-section-title {
+                font-family: var(--font-mono);
+                font-size: 11px;
+                letter-spacing: 2px;
+                text-transform: uppercase;
+                color: var(--text3);
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                margin: 1.2rem 0 .8rem;
+            }
+            .rf-section-title::after {
+                content: '';
+                flex: 1;
+                height: 1px;
+                background: var(--border);
+            }
+
+            /* ══════════════════════════════════════════════
+               CARD helper  (use via st.markdown unsafe html)
+               ══════════════════════════════════════════════ */
+            .rf-card {
+                background: var(--card);
+                border: 1px solid var(--border);
+                border-radius: 14px;
+                padding: 20px 24px;
+                box-shadow: var(--shadow);
+                margin-bottom: 12px;
+            }
+            .rf-card:hover { box-shadow: var(--shadow-hover); }
+
+            /* BADGE */
+            .rf-badge {
+                font-family: var(--font-mono);
+                font-size: 10px;
+                font-weight: 700;
+                letter-spacing: .5px;
+                padding: 3px 9px;
+                border-radius: 5px;
+                display: inline-block;
+            }
+            .rf-badge-green  { background: rgba(5,150,105,.12);  color: var(--green); }
+            .rf-badge-red    { background: rgba(220,38,38,.10);   color: var(--red);   }
+            .rf-badge-amber  { background: rgba(217,119,6,.12);   color: var(--amber); }
+            .rf-badge-cyan   { background: rgba(8,145,178,.10);   color: var(--accent);}
+
+            /* SIGNAL ROW */
+            .rf-signal-row {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                padding: 9px 0;
+                border-bottom: 1px solid var(--border);
+                font-size: 13px;
+            }
+            .rf-signal-row:last-child { border-bottom: none; }
+            .rf-signal-name  { color: var(--text); font-weight: 500; }
+            .rf-signal-val   { font-family: var(--font-mono); font-size: 12px; color: var(--text2); }
+
+            /* LARGE MONO NUMBER */
+            .rf-big-number {
+                font-family: var(--font-mono);
+                font-size: 36px;
+                font-weight: 700;
+                line-height: 1;
+                color: var(--text);
+            }
+            .rf-big-number.green { color: var(--green); }
+            .rf-big-number.red   { color: var(--red);   }
+            .rf-big-number.cyan  { color: var(--accent); }
+        </style>
+    """, unsafe_allow_html=True)
 
 
 def get_current_date() -> str:
@@ -212,8 +662,13 @@ def create_candle_stick_plot(stock_ticker_name: str, stock_name: str) -> None:
         # Chart layout updates
         candlestick_chart.update_layout(
             xaxis_rangeslider_visible=False,
-            margin=dict(l=0, r=0, t=0, b=0),
-            height=400  # Adjust the height dynamically if needed
+            margin=dict(l=0, r=0, t=4, b=0),
+            height=220,
+            plot_bgcolor="#ffffff",
+            paper_bgcolor="#ffffff",
+            font=dict(color="#475569", family="DM Sans, sans-serif", size=11),
+            xaxis=dict(gridcolor="#f1f5f9", linecolor="#e2e8f0"),
+            yaxis=dict(gridcolor="#f1f5f9", linecolor="#e2e8f0"),
         )
         
         # Render the chart
@@ -243,21 +698,24 @@ def create_stocks_dataframe(stock_ticker_list: list, stock_name: list) -> pd.Dat
                 # round value to 2 digits
                 daily_change_value = round(stock_data.iloc[-1]['Close'] - stock_data.iloc[0]['Open'], 2)
                 daily_change.append(daily_change_value)
+
+                # round value to 2 digits
+                pct_change_value = round((stock_data.iloc[-1]['Close'] - stock_data.iloc[0]['Open'])
+                                         / stock_data.iloc[0]['Open'] * 100, 2)
+                pct_change.append(pct_change_value)
+                all_price.append(stock_data['Close'].tolist())
             else:
                 # If no data available, use default values
                 close_price.append(0.0)
                 daily_change.append(0.0)
+                pct_change.append(0.0)
+                all_price.append([])
         except Exception as e:
             st.error(f"Error fetching data for {stock_ticker}: {str(e)}")
             close_price.append(0.0)
             daily_change.append(0.0)
-
-        # round value to 2 digits
-        pct_change_value = round((stock_data.iloc[-1]['Close'] - stock_data.iloc[0]['Open'])
-                                 / stock_data.iloc[0]['Open'] * 100, 2)
-        pct_change.append(pct_change_value)
-
-        all_price.append(stock_data['Close'].tolist())
+            pct_change.append(0.0)
+            all_price.append([])
 
     df_stocks = pd.DataFrame(
         {
@@ -377,7 +835,7 @@ def create_pie_chart(key_values: dict, save_to: str = None, chart_key: str = Non
             print(f"Error saving pie chart: {e}")
 
     # Display the chart in Streamlit with a unique key
-    st.plotly_chart(fig, use_container_width=True, use_container_height=True, key=chart_key)
+    st.plotly_chart(fig, use_container_width=True, key=chart_key)
 
     return None
 
@@ -389,4 +847,4 @@ def create_line_chart(portfolio_df: pd.DataFrame) -> None:
                       showlegend=False,
                       xaxis_title="Day(s) since purchase",
                       yaxis_title="Portfolio Value ($)")
-    st.plotly_chart(fig, use_container_width=True, use_container_height=True)
+    st.plotly_chart(fig, use_container_width=True)

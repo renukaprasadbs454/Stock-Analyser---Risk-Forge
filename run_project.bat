@@ -1,5 +1,5 @@
 @echo off
 cd /d "%~dp0"
 call venv\Scripts\activate
-streamlit run main_page.py
+python -m streamlit run main_page.py
 pause

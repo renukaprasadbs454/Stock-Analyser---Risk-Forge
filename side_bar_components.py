@@ -4,45 +4,91 @@ import datetime as dt
 import random
 
 
-def load_sidebar_dropdown_stocks(port_tab: st.sidebar.tabs) -> None:
-    # Add dropdown menu for portfolio with up to 20 investments
-    st.session_state["no_investment"] = port_tab.selectbox("Select No. of Investments",
-                                                           list(range(1, 31)),  # Extend range to 30
-                                                           index=2,
-                                                           key="side_bar_portfolio_name")
+def load_sidebar_dropdown_stocks(port_tab) -> None:
+    """Category → stock multi-select portfolio builder."""
+
+    category_names = list(tools.STOCK_CATEGORIES.keys())
+
+    port_tab.markdown("**Step 1 — Choose a Sector**")
+    selected_category = port_tab.radio(
+        "Sector",
+        options=category_names,
+        horizontal=False,
+        label_visibility="collapsed",
+        key="portfolio_category_radio",
+    )
+
+    stocks_in_cat = tools.STOCK_CATEGORIES[selected_category]
+    stock_options = [f"{ticker} — {name}" for ticker, name in stocks_in_cat.items()]
+
+    port_tab.markdown("**Step 2 — Pick Stocks**")
+    selected_labels = port_tab.multiselect(
+        "Stocks",
+        options=stock_options,
+        default=stock_options[:3],
+        key="portfolio_stock_multiselect",
+        label_visibility="collapsed",
+        placeholder="Search and select stocks…",
+    )
+
+    selected_tickers = [label.split(" — ")[0] for label in selected_labels]
+
+    # Cap at 10 for the portfolio
+    if len(selected_tickers) > 10:
+        port_tab.warning("Maximum 10 stocks allowed. Only the first 10 will be used.")
+        selected_tickers = selected_tickers[:10]
+
+    # Write into session state so the rest of the app can find them
+    st.session_state["no_investment"] = max(len(selected_tickers), 1)
+    st.session_state["selected_tickers"] = selected_tickers
+
+    # Seed individual stock session-state keys
+    for i, ticker in enumerate(selected_tickers):
+        key_name  = f"stock_{i + 1}_name"
+        key_share = f"stock_{i + 1}_share"
+        key_date  = f"stock_{i + 1}_purchase_date"
+        if key_name not in st.session_state:
+            st.session_state[key_name] = ticker
+        if key_share not in st.session_state:
+            st.session_state[key_share] = str(random.randrange(10, 100, 10))
+        if key_date not in st.session_state:
+            delta = dt.timedelta(days=random.randrange(3, 120))
+            st.session_state[key_date] = (dt.datetime.now() - delta).date()
 
 
+def load_sidebar_stocks(port_tab, no_investment: int) -> None:
+    """Render share-count + date inputs for each selected stock."""
+    selected_tickers = st.session_state.get("selected_tickers", [])
+    if not selected_tickers:
+        return
 
-def load_sidebar_stocks(port_tab: st.sidebar.tabs, no_investment: int) -> None:
-    demo_stock_list = tools.get_stock_demo_data(no_investment)
+    port_tab.markdown("**Step 3 — Set Quantities & Dates**")
 
-    # split into three columns
-    stock_col, share_col, date_col = port_tab.columns(3)
-
-    # create text boxes for each stocks in demo_stock_list
-    for stock in demo_stock_list:
-        with stock_col:
-            tools.create_stock_text_input(state_variable=f"stock_{demo_stock_list.index(stock) + 1}_name",
-                                          default_value=stock,
-                                          present_text=f"Investment {demo_stock_list.index(stock) + 1}",
-                                          key=f"side_bar_stock_{demo_stock_list.index(stock) + 1}_name")
-
-        with share_col:
-            no_shares = random.randrange(10, 100, 10)
-            tools.create_stock_text_input(state_variable=f"stock_{demo_stock_list.index(stock) + 1}_share",
-                                          default_value=str(no_shares),
-                                          present_text="No. of Shares",
-                                          key=f"side_bar_stock_{demo_stock_list.index(stock) + 1}_share")
-
-        with date_col:
-            time_delta = dt.timedelta(days=random.randrange(3, 120, 1))
-            tools.create_date_input(state_variable=f"stock_{demo_stock_list.index(stock) + 1}_purchase_date",
-                                    present_text="Purchase Date",
-                                    default_value=dt.datetime.now() - time_delta,
-                                    key=f"side_bar_stock_{demo_stock_list.index(stock) + 1}_purchase_date")
+    for i, ticker in enumerate(selected_tickers):
+        with port_tab.expander(f"{ticker}", expanded=False):
+            col_s, col_d = st.columns(2)
+            with col_s:
+                key_share = f"stock_{i + 1}_share"
+                st.session_state[key_share] = st.text_input(
+                    "Shares",
+                    value=st.session_state.get(key_share, "10"),
+                    key=f"sb_share_{i}",
+                )
+            with col_d:
+                key_date = f"stock_{i + 1}_purchase_date"
+                default_date = st.session_state.get(key_date, dt.date.today() - dt.timedelta(days=30))
+                if isinstance(default_date, dt.datetime):
+                    default_date = default_date.date()
+                st.session_state[key_date] = st.date_input(
+                    "Purchase Date",
+                    value=default_date,
+                    key=f"sb_date_{i}",
+                )
+            # Keep name in sync (may have changed via radio)
+            st.session_state[f"stock_{i + 1}_name"] = ticker
 
 
-def load_sidebar_risk_model(risk_tab: st.sidebar.tabs) -> None:
+def load_sidebar_risk_model(risk_tab) -> None:
     col_monte1, col_monte2 = risk_tab.columns(2)
 
     with col_monte1:

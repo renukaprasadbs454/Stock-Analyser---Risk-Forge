@@ -3,7 +3,10 @@ import pandas as pd
 import stTools as tools
 
 
-def add_portfolio_returns_graphs(portfolio_df: pd.DataFrame) -> None:
+def add_portfolio_returns_graphs(portfolio_df) -> None:
+    # Convert numpy array to DataFrame if needed (Monte Carlo returns shape: no_days x no_simulations)
+    if not isinstance(portfolio_df, pd.DataFrame):
+        portfolio_df = pd.DataFrame(portfolio_df)
     tools.create_line_chart(portfolio_df)
     # st.line_chart(portfolio_df, use_container_width=True, height=500, width=250)
 

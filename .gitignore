@@ -1,10 +1,66 @@
-
-venv/
-.idea/
+# ── Python ────────────────────────────────────────────────────────────────────
 __pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg
+*.egg-info/
+dist/
+build/
+*.whl
+.eggs/
 
+# ── Virtual environments ───────────────────────────────────────────────────────
+venv/
+env/
+.env/
+.venv/
+ENV/
+
+# ── Secrets / API keys ────────────────────────────────────────────────────────
+.env
+.env.local
+*.secret
+# Streamlit secrets file (API keys — never commit this)
+.streamlit/secrets.toml
+
+# ── Database ──────────────────────────────────────────────────────────────────
+users.db
+*.db
+*.sqlite
+*.sqlite3
+
+# ── Jupyter notebooks (scratch) ───────────────────────────────────────────────
 explore.ipynb
 example_meme_stock_portfolio.ipynb
 example_tech_stock_portfolio.ipynb
-users.db
+.ipynb_checkpoints/
 
+# ── IDE / editor ──────────────────────────────────────────────────────────────
+.idea/
+.vscode/
+*.code-workspace
+
+# ── OS files ──────────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ── Logs & temp ───────────────────────────────────────────────────────────────
+*.log
+*.tmp
+*.bak
+*.swp
+
+# ── Generated images ──────────────────────────────────────────────────────────
+monte_carlo_chart.png
+rf_prediction_chart.png
+
+# ── Stale / generated reports ─────────────────────────────────────────────────
+fix_requirements_encoding.py
+golbal_risk.html
+REVIEW_2_REPORT.html
+REVIEW_2_REPORT.md
+PROJECT_ANALYSIS.md
+GLOBAL_RISK_INTEL.md
+=2.13.0
